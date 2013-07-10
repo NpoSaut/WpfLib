@@ -10,8 +10,14 @@ namespace Converters
     [ValueConversion(typeof(Enum), typeof(String))]
     public class UniversalLocalisedObjectToStringConverter : ConverterBase<UniversalLocalisedObjectToStringConverter>
     {
+        public String NullString { get; set; }
         private static EnumDescriptionToStringConverter descriptedEnumConverter = new EnumDescriptionToStringConverter();
         private static UniversalLocalisedObjectToStringConverter DefaultConverter = new UniversalLocalisedObjectToStringConverter();
+
+        public UniversalLocalisedObjectToStringConverter()
+        {
+            NullString = "null";
+        }
 
         public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
         {
@@ -25,7 +31,7 @@ namespace Converters
             }
             else
             {
-                return (Value ?? "null").ToString();
+                return (Value ?? NullString).ToString();
             }
         }
 
