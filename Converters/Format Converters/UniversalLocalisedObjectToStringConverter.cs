@@ -34,10 +34,13 @@ namespace Converters
                 return (Value ?? NullString).ToString();
             }
         }
-
+        public String Convert(Object value)
+        {
+            return (String)this.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture);
+        }
         public static String GetString(Object value)
         {
-            return (String)DefaultConverter.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture);
+            return DefaultConverter.Convert(value);
         }
     }
 }
