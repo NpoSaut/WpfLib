@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Interactivity;
 
 namespace Behaviors.DragDrop
@@ -30,7 +32,7 @@ namespace Behaviors.DragDrop
 
         private void AssociatedObjectOnDrop(object Sender, DragEventArgs e)
         {
-            (FeedbackElement ?? AssociatedObject).ClearValue(FrameworkElement.StyleProperty);
+            OnDiscardPreviewDrop(e);
             if (CanAcceptDrop(e)) OnDrop(e);
             else e.Effects = DragDropEffects.None;
         }
@@ -38,15 +40,13 @@ namespace Behaviors.DragDrop
 
         private void AssociatedObjectOnDragEnter(object Sender, DragEventArgs e)
         {
-            var canAcceptDrop = CanAcceptDrop(e);
-            var feedbackStyle = canAcceptDrop ? FeedbackStyle : (NegativeFeedbackStyle ?? FeedbackStyle);
-            (FeedbackElement ?? AssociatedObject).SetCurrentValue(FrameworkElement.StyleProperty, feedbackStyle);
+            OnPreviewDrop(e);
             OnDragEnter(e);
         }
 
         private void AssociatedObjectOnDragLeave(object Sender, DragEventArgs e)
         {
-            (FeedbackElement ?? AssociatedObject).ClearValue(FrameworkElement.StyleProperty);
+            OnDiscardPreviewDrop(e);
             OnDragLeave(e);
         }
 
@@ -94,6 +94,18 @@ namespace Behaviors.DragDrop
         {
             get { return (Style)GetValue(NegativeFeedbackStyleProperty); }
             set { SetValue(NegativeFeedbackStyleProperty, value); }
+        }
+
+        protected virtual void OnPreviewDrop(DragEventArgs DragEventArgs)
+        {
+            var canAcceptDrop = CanAcceptDrop(DragEventArgs);
+            var feedbackStyle = canAcceptDrop ? FeedbackStyle : (NegativeFeedbackStyle ?? FeedbackStyle);
+            (FeedbackElement ?? AssociatedObject).SetCurrentValue(FrameworkElement.StyleProperty, feedbackStyle);
+        }
+
+        protected virtual void OnDiscardPreviewDrop(DragEventArgs DragEventArgs)
+        {
+            (FeedbackElement ?? AssociatedObject).ClearValue(FrameworkElement.StyleProperty);
         }
     }
 }

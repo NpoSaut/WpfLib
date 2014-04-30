@@ -56,6 +56,7 @@
     <Compile Include="DragDrop\DragSourceBehavior.cs" />
     <Compile Include="DragDrop\DropTargetBehavior.cs" />
     <Compile Include="DragDrop\FileDropTargetBehavior.cs" />
+    <Compile Include="DragDrop\IDropPreviewable.cs" />
     <Compile Include="FadeOutBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TriggerHideBehavior.cs" />
