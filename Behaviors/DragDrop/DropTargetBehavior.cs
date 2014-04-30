@@ -28,12 +28,19 @@ namespace Behaviors.DragDrop
 
         #region Обработчики встроеных событий Drag/Drop
 
-        private void AssociatedObjectOnDrop(object Sender, DragEventArgs e) { OnDrop(e); }
+        private void AssociatedObjectOnDrop(object Sender, DragEventArgs e)
+        {
+            (FeedbackElement ?? AssociatedObject).ClearValue(FrameworkElement.StyleProperty);
+            if (CanAcceptDrop(e)) OnDrop(e);
+            else e.Effects = DragDropEffects.None;
+        }
         private void AssociatedObjectOnGiveFeedback(object Sender, GiveFeedbackEventArgs e) { OnGiveFeedback(e); }
 
         private void AssociatedObjectOnDragEnter(object Sender, DragEventArgs e)
         {
-            (FeedbackElement ?? AssociatedObject).SetCurrentValue(FrameworkElement.StyleProperty, FeedbackStyle);
+            var canAcceptDrop = CanAcceptDrop(e);
+            var feedbackStyle = canAcceptDrop ? FeedbackStyle : (NegativeFeedbackStyle ?? FeedbackStyle);
+            (FeedbackElement ?? AssociatedObject).SetCurrentValue(FrameworkElement.StyleProperty, feedbackStyle);
             OnDragEnter(e);
         }
 
@@ -47,6 +54,7 @@ namespace Behaviors.DragDrop
 
         #region Абстракции событий Drag/Drop
 
+        protected virtual bool CanAcceptDrop(DragEventArgs DragEventArgs) { return true; }
         protected abstract void OnDrop(DragEventArgs DragEventArgs);
         protected virtual void OnDragEnter(DragEventArgs DragEventArgs) { }
         protected virtual void OnDragLeave(DragEventArgs DragEventArgs) { }
@@ -77,6 +85,15 @@ namespace Behaviors.DragDrop
         {
             get { return (Style)GetValue(FeedbackStyleProperty); }
             set { SetValue(FeedbackStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty NegativeFeedbackStyleProperty =
+            DependencyProperty.Register("NegativeFeedbackStyle", typeof (Style), typeof (DropTargetBehavior), new PropertyMetadata(default(Style)));
+
+        public Style NegativeFeedbackStyle
+        {
+            get { return (Style)GetValue(NegativeFeedbackStyleProperty); }
+            set { SetValue(NegativeFeedbackStyleProperty, value); }
         }
     }
 }

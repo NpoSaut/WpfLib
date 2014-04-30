@@ -19,35 +19,19 @@ namespace Behaviors.DragDrop
 
         protected override void OnDragEnter(DragEventArgs DragEventArgs)
         {
-            _readyForDrop = DropCommand.CanExecute(GetCommandParameter(DragEventArgs));
-            if (_readyForDrop)
-            {
-                DragEventArgs.Effects = GetDragDropEffects(DragEventArgs);
-            }
-            else
-            {
-                DragEventArgs.Effects = DragDropEffects.None;
-            }
+            _readyForDrop = CanAcceptDrop(DragEventArgs);
+            DragEventArgs.Effects = _readyForDrop ? GetDragDropEffects(DragEventArgs) : DragDropEffects.None;
         }
-
-        protected override void OnGiveFeedback(GiveFeedbackEventArgs FeedbackEventArgs)
-        {
-            /*if (_readyForDrop)
-            {
-                FeedbackEventArgs.Effects = GetDragDropEffects(FeedbackEventArgs);
-            }
-            else
-            {
-                FeedbackEventArgs.Effects = DragDropEffects.None;
-            }*/
-        }
-
-
 
         protected override void OnDrop(DragEventArgs DragEventArgs)
         {
             var parameter = GetCommandParameter(DragEventArgs);
             if (DropCommand.CanExecute(parameter)) DropCommand.Execute(parameter);
+        }
+
+        protected override bool CanAcceptDrop(DragEventArgs DragEventArgs)
+        {
+            return DropCommand.CanExecute(GetCommandParameter(DragEventArgs));
         }
 
         protected abstract object GetCommandParameter(DragEventArgs DragEventArgs);
