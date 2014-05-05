@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Timers;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interactivity;
+using System.Windows.Media;
 
 namespace Behaviors.DragDrop
 {
@@ -13,10 +18,13 @@ namespace Behaviors.DragDrop
         {
             base.OnAttached();
             AssociatedObject.AllowDrop = true;
-            AssociatedObject.Drop += AssociatedObjectOnDrop;
+            AssociatedObject.PreviewDrop += AssociatedObjectOnDrop;
             AssociatedObject.DragEnter += AssociatedObjectOnDragEnter;
-            AssociatedObject.GiveFeedback += AssociatedObjectOnGiveFeedback;
             AssociatedObject.DragLeave += AssociatedObjectOnDragLeave;
+            AssociatedObject.PreviewGiveFeedback += AssociatedObjectOnGiveFeedback;
+
+            _leaveTimer = new Timer(100);
+            _leaveTimer.Elapsed += LeaveTimerOnElapsed;
         }
 
         protected override void OnDetaching()
@@ -38,13 +46,39 @@ namespace Behaviors.DragDrop
         }
         private void AssociatedObjectOnGiveFeedback(object Sender, GiveFeedbackEventArgs e) { OnGiveFeedback(e); }
 
+        private IEnumerable<DependencyObject> EnumerateVisualParents(DependencyObject element)
+        {
+            if (element == null) yield break;
+            DependencyObject parent;
+            do
+            {
+                parent = VisualTreeHelper.GetParent(element);
+                yield return parent;
+            } while (parent != null);
+        }
+
         private void AssociatedObjectOnDragEnter(object Sender, DragEventArgs e)
         {
+            _leaveTimer.Stop();
             OnPreviewDrop(e);
             OnDragEnter(e);
         }
 
         private void AssociatedObjectOnDragLeave(object Sender, DragEventArgs e)
+        {
+            _leaveEventArgs = e;
+            _leaveTimer.Start();
+        }
+
+        private Timer _leaveTimer;
+        private DragEventArgs _leaveEventArgs;
+        private void LeaveTimerOnElapsed(object Sender, ElapsedEventArgs Args)
+        {
+            _leaveTimer.Stop();
+            Dispatcher.BeginInvoke((Action<DragEventArgs>)OnDragDeferredLeave, _leaveEventArgs);
+        }
+
+        private void OnDragDeferredLeave(DragEventArgs e)
         {
             OnDiscardPreviewDrop(e);
             OnDragLeave(e);
