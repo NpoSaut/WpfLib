@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Interactivity;
 
-namespace Behaviors
+namespace Behaviors.TriggerHide
 {
     /// <summary>Тип условия отображения элемента</summary>
     public enum ShowingCondition

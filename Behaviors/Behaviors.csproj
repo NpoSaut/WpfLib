@@ -51,15 +51,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnimateProperty\AnimatePropertyBehavior.cs" />
-    <Compile Include="CollapseBehavior.cs" />
+    <Compile Include="TriggerHide\CollapseBehavior.cs" />
     <Compile Include="DragDrop\CommandParameterDropTargetBehavior.cs" />
     <Compile Include="DragDrop\DragSourceBehavior.cs" />
     <Compile Include="DragDrop\DropTargetBehavior.cs" />
     <Compile Include="DragDrop\FileDropTargetBehavior.cs" />
     <Compile Include="DragDrop\IDropPreviewable.cs" />
-    <Compile Include="FadeOutBehavior.cs" />
+    <Compile Include="TriggerHide\FadeOutBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TriggerHideBehavior.cs" />
+    <Compile Include="TriggerHide\TriggerHideBehavior.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

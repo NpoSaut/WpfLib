@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace Behaviors
+namespace Behaviors.TriggerHide
 {
     /// <summary>Выполняет эффект "уплывания" и "наплывания" объекта при выполнении условия его отображения</summary>
     public class FadeOutBehavior : TriggerHideBehavior<FrameworkElement>
