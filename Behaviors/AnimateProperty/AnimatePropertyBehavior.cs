@@ -109,7 +109,6 @@ namespace Behaviors.AnimateProperty
         /// <summary>Обработчик события Compleated внутренней анимации</summary>
         private void AnimationOnCompleted(object Sender, EventArgs Args)
         {
-            Console.WriteLine("Animation Compleated");
             lastAnimationClock = null;
             OnAnimationCompleated(new PropertyAnimationCompleatedEventArgs());
         }
