@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Timers;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interactivity;
 using System.Windows.Media;
 
 namespace Behaviors.DragDrop
 {
+    public enum DropStateKind
+    {
+        Free,
+        Preview,
+        NegativePreview
+    }
+
     public abstract class DropTargetBehavior : Behavior<FrameworkElement>
     {
         #region Присоединение / Отсоединение
@@ -38,12 +42,16 @@ namespace Behaviors.DragDrop
 
         #region Обработчики встроеных событий Drag/Drop
 
+        private DragEventArgs _leaveEventArgs;
+        private Timer _leaveTimer;
+
         private void AssociatedObjectOnDrop(object Sender, DragEventArgs e)
         {
             OnDiscardPreviewDrop(e);
             if (CanAcceptDrop(e)) OnDrop(e);
             else e.Effects = DragDropEffects.None;
         }
+
         private void AssociatedObjectOnGiveFeedback(object Sender, GiveFeedbackEventArgs e) { OnGiveFeedback(e); }
 
         private IEnumerable<DependencyObject> EnumerateVisualParents(DependencyObject element)
@@ -70,8 +78,6 @@ namespace Behaviors.DragDrop
             _leaveTimer.Start();
         }
 
-        private Timer _leaveTimer;
-        private DragEventArgs _leaveEventArgs;
         private void LeaveTimerOnElapsed(object Sender, ElapsedEventArgs Args)
         {
             _leaveTimer.Stop();
@@ -96,50 +102,24 @@ namespace Behaviors.DragDrop
 
         #endregion
 
-        public static readonly DependencyProperty FeedbackElementProperty =
-            DependencyProperty.Register("FeedbackElement", typeof (FrameworkElement), typeof (DropTargetBehavior),
-                                        new PropertyMetadata(default(FrameworkElement)));
+        #region Присоединённое свойство DropState
 
-        public static readonly DependencyProperty FeedbackStyleProperty =
-            DependencyProperty.Register("FeedbackStyle", typeof (Style), typeof (DropTargetBehavior),
-                                        new PropertyMetadata(default(Style)));
+        public static readonly DependencyProperty DropStateProperty =
+            DependencyProperty.RegisterAttached("DropState", typeof (DropStateKind), typeof (DropTargetBehavior),
+                                                new PropertyMetadata(DropStateKind.Free));
 
-        /// <summary>
-        ///     Элемент, к которому будут применяться эффекты при перетаскивании. По-умолчанию - элемент, ассоциированный с
-        ///     поведением
-        /// </summary>
-        public FrameworkElement FeedbackElement
-        {
-            get { return (FrameworkElement)GetValue(FeedbackElementProperty); }
-            set { SetValue(FeedbackElementProperty, value); }
-        }
+        public static void SetDropState(DependencyObject element, DropStateKind value) { element.SetValue(DropStateProperty, value); }
 
-        /// <summary>Стиль, который будет применяться к элементу при перетаскивании над ним</summary>
-        public Style FeedbackStyle
-        {
-            get { return (Style)GetValue(FeedbackStyleProperty); }
-            set { SetValue(FeedbackStyleProperty, value); }
-        }
+        public static DropStateKind GetDropState(DependencyObject element) { return (DropStateKind)element.GetValue(DropStateProperty); }
 
-        public static readonly DependencyProperty NegativeFeedbackStyleProperty =
-            DependencyProperty.Register("NegativeFeedbackStyle", typeof (Style), typeof (DropTargetBehavior), new PropertyMetadata(default(Style)));
-
-        public Style NegativeFeedbackStyle
-        {
-            get { return (Style)GetValue(NegativeFeedbackStyleProperty); }
-            set { SetValue(NegativeFeedbackStyleProperty, value); }
-        }
+        #endregion
 
         protected virtual void OnPreviewDrop(DragEventArgs DragEventArgs)
         {
-            var canAcceptDrop = CanAcceptDrop(DragEventArgs);
-            var feedbackStyle = canAcceptDrop ? FeedbackStyle : (NegativeFeedbackStyle ?? FeedbackStyle);
-            (FeedbackElement ?? AssociatedObject).SetCurrentValue(FrameworkElement.StyleProperty, feedbackStyle);
+            bool canAcceptDrop = CanAcceptDrop(DragEventArgs);
+            SetDropState(AssociatedObject, canAcceptDrop ? DropStateKind.Preview : DropStateKind.NegativePreview);
         }
 
-        protected virtual void OnDiscardPreviewDrop(DragEventArgs DragEventArgs)
-        {
-            (FeedbackElement ?? AssociatedObject).ClearValue(FrameworkElement.StyleProperty);
-        }
+        protected virtual void OnDiscardPreviewDrop(DragEventArgs DragEventArgs) { SetDropState(AssociatedObject, DropStateKind.Free); }
     }
 }
