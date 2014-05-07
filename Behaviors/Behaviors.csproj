@@ -50,7 +50,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnimatePropertyBehavior.cs" />
+    <Compile Include="AnimateProperty\AnimatePropertyBehavior.cs" />
     <Compile Include="CollapseBehavior.cs" />
     <Compile Include="DragDrop\CommandParameterDropTargetBehavior.cs" />
     <Compile Include="DragDrop\DragSourceBehavior.cs" />
