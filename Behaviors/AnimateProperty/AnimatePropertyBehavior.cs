@@ -22,6 +22,16 @@ namespace Behaviors.AnimateProperty
             DependencyProperty.Register("AnimationDuration", typeof (Duration), typeof (AnimatePropertyBehavior),
                                         new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(1500))));
 
+        public static readonly DependencyProperty EasingFunctionProperty =
+            DependencyProperty.Register("EasingFunction", typeof (IEasingFunction), typeof (AnimatePropertyBehavior),
+            new PropertyMetadata(default(IEasingFunction)));
+
+        public IEasingFunction EasingFunction
+        {
+            get { return (IEasingFunction)GetValue(EasingFunctionProperty); }
+            set { SetValue(EasingFunctionProperty, value); }
+        }
+
         /// <summary>Предыдущее значение свойства</summary>
         private object _previousValue;
 
@@ -126,23 +136,22 @@ namespace Behaviors.AnimateProperty
         /// <param name="NewValue"></param>
         private AnimationTimeline GetAnimation(object OldValue, object NewValue)
         {
-            AnimationTimeline animation = AnimationFactories[Property.PropertyType](OldValue, NewValue, AnimationDuration);
+            AnimationTimeline animation = AnimationFactories[Property.PropertyType](OldValue, NewValue, AnimationDuration, EasingFunction);
             animation.FillBehavior = FillBehavior.Stop;
-            //animation.Completed += AnimationOnCompleted;
             return animation;
         }
 
         /// <summary>Аниматор для Double-свойств</summary>
-        private static AnimationTimeline GetDoubleAnimation(object OldValue, object NewValue, Duration AnimationDuration)
+        private static AnimationTimeline GetDoubleAnimation(object OldValue, object NewValue, Duration AnimationDuration, IEasingFunction EasingFunction)
         {
-            return new DoubleAnimation((double)OldValue, (double)NewValue, AnimationDuration);
+            return new DoubleAnimation((double)OldValue, (double)NewValue, AnimationDuration) { EasingFunction = EasingFunction };
         }
 
         /// <summary>Метод, запускающий анимацию указанного свойства</summary>
         /// <param name="OldValue">Старое значение свойства (с которого начинается анимация)</param>
         /// <param name="NewValue">Новое значение свойства (которым должна закончиться анимация)</param>
         /// <param name="AnimationDuration">Продолжительность анимации</param>
-        private delegate AnimationTimeline AnimationFactoryMethod(Object OldValue, Object NewValue, Duration AnimationDuration);
+        private delegate AnimationTimeline AnimationFactoryMethod(Object OldValue, Object NewValue, Duration AnimationDuration, IEasingFunction EasingFunction);
     }
 
     public class PropertyAnimationCompleatedEventArgs : EventArgs { }

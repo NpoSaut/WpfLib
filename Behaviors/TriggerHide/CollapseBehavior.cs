@@ -7,34 +7,31 @@ using Behaviors.AnimateProperty;
 
 namespace Behaviors.TriggerHide
 {
-    /// <summary>
-    /// Разворачивает элемент при заданном условии
-    /// </summary>
+    /// <summary>Разворачивает элемент при заданном условии</summary>
     public class CollapseBehavior : TriggerHideBehavior<FrameworkElement>
     {
         public static readonly DependencyProperty AnimationDurationProperty =
-            DependencyProperty.Register("AnimationDuration", typeof (Duration), typeof (CollapseBehavior), new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(300))));
+            DependencyProperty.Register("AnimationDuration", typeof (Duration), typeof (CollapseBehavior),
+                                        new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(300))));
 
-        /// <summary>
-        /// Продолжительность анимации
-        /// </summary>
+        public static readonly DependencyProperty EasingFunctionProperty =
+            DependencyProperty.Register("EasingFunction", typeof (IEasingFunction), typeof (CollapseBehavior),
+                                        new PropertyMetadata(default(IEasingFunction)));
+
+        private ScaleTransform _transform;
+
+        public IEasingFunction EasingFunction
+        {
+            get { return (IEasingFunction)GetValue(EasingFunctionProperty); }
+            set { SetValue(EasingFunctionProperty, value); }
+        }
+
+        /// <summary>Продолжительность анимации</summary>
         public Duration AnimationDuration
         {
             get { return (Duration)GetValue(AnimationDurationProperty); }
             set { SetValue(AnimationDurationProperty, value); }
         }
-
-        protected IEasingFunction ShowEasingFunction
-        {
-            get { return new ElasticEase { Oscillations = 1, Springiness = 1.5 }; }
-        }
-
-        protected IEasingFunction HideEasingFunction
-        {
-            get { return new PowerEase(); }
-        }
-
-        private ScaleTransform _transform;
 
         protected override void Hide()
         {
@@ -55,16 +52,21 @@ namespace Behaviors.TriggerHide
             _transform = new ScaleTransform();
             AssociatedObject.LayoutTransform = _transform;
 
+            // Прозрачность
             Dispatcher.BeginInvoke((Action<Behavior>)Interaction.GetBehaviors(AssociatedObject).Add,
                                    new AnimatePropertyBehavior(UIElement.OpacityProperty)
                                    {
                                        AnimationDuration =
-                                           new Duration(
-                                           new TimeSpan((int)(AnimationDuration.TimeSpan.Ticks * 0.7)))
+                                           new Duration(new TimeSpan((int)(AnimationDuration.TimeSpan.Ticks * 0.7)))
                                    });
 
-            var scaleYAnimateBehavior = new AnimatePropertyBehavior(ScaleTransform.ScaleYProperty) { AnimationDuration = AnimationDuration };
-            Dispatcher.BeginInvoke((Action<Behavior>)Interaction.GetBehaviors(_transform).Add, scaleYAnimateBehavior);
+            // Сжатие
+            Dispatcher.BeginInvoke((Action<Behavior>)Interaction.GetBehaviors(_transform).Add,
+                                   new AnimatePropertyBehavior(ScaleTransform.ScaleYProperty)
+                                   {
+                                       AnimationDuration = AnimationDuration,
+                                       EasingFunction = EasingFunction
+                                   });
 
             base.OnAttached();
         }
