@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -29,6 +30,12 @@ namespace Behaviors.DragDrop
             base.OnDragEnter(DragEventArgs);
             var readyForDrop = CanAcceptDrop(DragEventArgs);
             DragEventArgs.Effects = readyForDrop ? GetDragDropEffects(DragEventArgs) : DragDropEffects.None;
+        }
+
+        protected override void OnDragOver(DragEventArgs DragEventArgs)
+        {
+            DragEventArgs.Effects = GetDragDropEffects(GetCommandParameter(DragEventArgs));
+            base.OnDragOver(DragEventArgs);
         }
 
         protected override void OnDrop(DragEventArgs DragEventArgs)

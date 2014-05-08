@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Timers;
 using System.Windows;
 using System.Windows.Interactivity;
@@ -25,7 +26,7 @@ namespace Behaviors.DragDrop
             AssociatedObject.PreviewDrop += AssociatedObjectOnDrop;
             AssociatedObject.DragEnter += AssociatedObjectOnDragEnter;
             AssociatedObject.DragLeave += AssociatedObjectOnDragLeave;
-            AssociatedObject.PreviewGiveFeedback += AssociatedObjectOnGiveFeedback;
+            AssociatedObject.DragOver += AssociatedObjectOnDragOver;
 
             _leaveTimer = new Timer(100);
             _leaveTimer.Elapsed += LeaveTimerOnElapsed;
@@ -52,8 +53,6 @@ namespace Behaviors.DragDrop
             else e.Effects = DragDropEffects.None;
         }
 
-        private void AssociatedObjectOnGiveFeedback(object Sender, GiveFeedbackEventArgs e) { OnGiveFeedback(e); }
-
         private IEnumerable<DependencyObject> EnumerateVisualParents(DependencyObject element)
         {
             if (element == null) yield break;
@@ -65,11 +64,26 @@ namespace Behaviors.DragDrop
             } while (parent != null);
         }
 
+        private void AssociatedObjectOnDragOver(object Sender, DragEventArgs e)
+        {
+            if (!CanAcceptDrop(e)) e.Effects = DragDropEffects.None;
+            else OnDragOver(e);
+            e.Handled = true;
+        }
+
         private void AssociatedObjectOnDragEnter(object Sender, DragEventArgs e)
         {
             _leaveTimer.Stop();
+            CurrentDragEventArgs = e;
             OnPreviewDrop(e);
             OnDragEnter(e);
+        }
+
+        private void OnDragDeferredLeave(DragEventArgs e)
+        {
+            OnDiscardPreviewDrop(e);
+            OnDragLeave(e);
+            CurrentDragEventArgs = null;
         }
 
         private void AssociatedObjectOnDragLeave(object Sender, DragEventArgs e)
@@ -84,12 +98,6 @@ namespace Behaviors.DragDrop
             Dispatcher.BeginInvoke((Action<DragEventArgs>)OnDragDeferredLeave, _leaveEventArgs);
         }
 
-        private void OnDragDeferredLeave(DragEventArgs e)
-        {
-            OnDiscardPreviewDrop(e);
-            OnDragLeave(e);
-        }
-
         #endregion
 
         #region Абстракции событий Drag/Drop
@@ -98,7 +106,7 @@ namespace Behaviors.DragDrop
         protected abstract void OnDrop(DragEventArgs DragEventArgs);
         protected virtual void OnDragEnter(DragEventArgs DragEventArgs) { }
         protected virtual void OnDragLeave(DragEventArgs DragEventArgs) { }
-        protected virtual void OnGiveFeedback(GiveFeedbackEventArgs FeedbackEventArgs) { }
+        protected virtual void OnDragOver(DragEventArgs DragEventArgs) { }
 
         #endregion
 
@@ -113,6 +121,8 @@ namespace Behaviors.DragDrop
         public static DropStateKind GetDropState(DependencyObject element) { return (DropStateKind)element.GetValue(DropStateProperty); }
 
         #endregion
+
+        protected DragEventArgs CurrentDragEventArgs { get; private set; }
 
         protected virtual void OnPreviewDrop(DragEventArgs DragEventArgs)
         {
