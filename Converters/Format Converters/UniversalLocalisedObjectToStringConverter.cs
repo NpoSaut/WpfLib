@@ -1,46 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
 
 namespace Converters
 {
-    [ValueConversion(typeof(Enum), typeof(String))]
+    [ValueConversion(typeof (Enum), typeof (String))]
     public class UniversalLocalisedObjectToStringConverter : ConverterBase<UniversalLocalisedObjectToStringConverter>
     {
-        public String NullString { get; set; }
-        private static EnumDescriptionToStringConverter descriptedEnumConverter = new EnumDescriptionToStringConverter();
-        private static UniversalLocalisedObjectToStringConverter DefaultConverter = new UniversalLocalisedObjectToStringConverter();
+        private static readonly EnumDescriptionToStringConverter DescriptedEnumConverter = new EnumDescriptionToStringConverter();
 
-        public UniversalLocalisedObjectToStringConverter()
-        {
-            NullString = "null";
-        }
+        public UniversalLocalisedObjectToStringConverter() { NullString = "null"; }
+        public String StringFormat { get; set; }
+        public String NullString { get; set; }
 
         public override object Convert(object Value, Type TargetType, object Parameter, CultureInfo Culture)
         {
-            if (Value is Boolean)
-            {
-                return (Boolean)Value ? "Да" : "Нет";
-            }
-            else if (Value is Enum)
-            {
-                return descriptedEnumConverter.Convert(Value, TargetType, Parameter, Culture);
-            }
-            else
-            {
-                return (Value ?? NullString).ToString();
-            }
+            if (Value == null) return NullString;
+            if (Value is Boolean) return (Boolean)Value ? "Да" : "Нет";
+            if (Value is Enum) return DescriptedEnumConverter.Convert(Value, TargetType, Parameter, Culture);
+
+            string format = StringFormat != null ? ("{0:" + StringFormat + "}") : "{0}";
+            return string.Format(format, Value);
         }
-        public String Convert(Object value)
+
+        public string Convert(object value) { return (String)Convert(value, typeof (String), null, CultureInfo.CurrentUICulture); }
+
+        public static String GetString(Object value, String StringFormat = null, String NullString = "---")
         {
-            return (String)this.Convert(value, typeof(String), null, CultureInfo.CurrentUICulture);
-        }
-        public static String GetString(Object value)
-        {
-            return DefaultConverter.Convert(value);
+            return (new UniversalLocalisedObjectToStringConverter { StringFormat = StringFormat, NullString = NullString }).Convert(value);
         }
     }
 }
