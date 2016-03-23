@@ -42,6 +42,7 @@ namespace Behaviors.DragDrop
         {
             var parameter = GetCommandParameter(DragEventArgs);
             if (DropCommand.CanExecute(parameter)) DropCommand.Execute(parameter);
+            CommandManager.InvalidateRequerySuggested();
         }
 
         protected override bool CanAcceptDrop(DragEventArgs DragEventArgs)
