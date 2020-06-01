@@ -21,10 +21,10 @@ namespace WpfTools.Controls
     /// </summary>
     public partial class FreeFlipPanel : UserControl
     {
-        [System.ComponentModel.Category("Кисти")]
         /// <summary>
         /// Кисть залики плитки под надписью
         /// </summary>
+        [System.ComponentModel.Category("Кисти")]
         public Brush TileBrush
         {
             get { return (Brush)GetValue(TileBrushProperty); }
